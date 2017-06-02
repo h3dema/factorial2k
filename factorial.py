@@ -113,20 +113,11 @@ def index(v):
     p /= 2
     return p
 
-def generate_model(matrix):
+def __generate_model(matrix):
     # step 1) same number of y's?
-    correct_number_of_y = True
     num_y = len(matrix[0][-1])
-
     number_of_factors = len(matrix[0])-1
 
-    for i in range(1,len(matrix)):
-        if num_y != len(matrix[i][-1]):
-            correct_number_of_y = False
-            break
-    assert correct_number_of_y, "Each value should have the same number of y measures"
-
-    # step 2) system of equations
     x, combinations = contrasts_factorial2k(number_of_factors)
     c = np.ones(2**number_of_factors)
     x = np.insert(x, 0, c, axis=1) # insert column c
@@ -144,20 +135,46 @@ def generate_model(matrix):
         residual = l[-1] - ym[p]
         r[p] = residual
 
-    return b, r
+    return {'coeficients':b,
+            'y_hat': ym,
+            'errors':r,
+            }
 
 def factorial2k(factors, matrix):
     number_of_factors = len(factors)
-    contrasts, combinations = contrasts_factorial2k(number_of_factors=number_of_factors)
-    i = 0
-    for entry in contrasts:
-        print binary(i,number_of_factors), '\t', entry
-        i += 1
+    assert number_of_factors >= 2, "Expected 2 or more factors"
+    correct_number_of_y = True
+    num_y = len(matrix[0][-1])
 
-    b, r = generate_model(matrix)
-    return {'Coeficients':b,
-            'Errors':r,
-            }
+    # step 1) same number of y's?
+    for i in range(1,len(matrix)):
+        if num_y != len(matrix[i][-1]):
+            correct_number_of_y = False
+            break
+    assert correct_number_of_y, "Each value should have the same number of y measures"
+
+    contrasts, combinations = contrasts_factorial2k(number_of_factors=number_of_factors)
+
+    result = __generate_model(matrix)
+    b = result['coeficients']
+    e = result['errors']
+
+    sst = 0
+    for i in range(1, len(b)):
+        sst += b[i]**2
+    sst *= 2 ** number_of_factors
+
+    mult = (2 ** number_of_factors) * num_y
+    ss = []
+    for q in b:
+        ss.append( mult * q**2 )
+
+    result['sse'] = sst - sum(ss)
+    result['ssy'] = sst + ss[0]
+    result['sst'] = sst
+    result['ss'] = ss
+
+    return result
 
 if __name__ == "__main__":
 
@@ -170,3 +187,12 @@ if __name__ == "__main__":
                ]
 
     result = factorial2k(factors, example)
+    print 'errors:'
+    for e in result['errors']:
+        print e
+    print 'coeficients', result['coeficients']
+    print 'sst', result['sst']
+    print 'sst', result['sse']
+    print 'ss ', result['ss']
+    print 'ss%', result['ss'] / result['sst']
+    print 'ssy', result['ssy']
