@@ -146,6 +146,19 @@ def generate_model(matrix):
 
     return b, r
 
+def factorial2k(factors, matrix):
+    number_of_factors = len(factors)
+    contrasts, combinations = contrasts_factorial2k(number_of_factors=number_of_factors)
+    i = 0
+    for entry in contrasts:
+        print binary(i,number_of_factors), '\t', entry
+        i += 1
+
+    b, r = generate_model(matrix)
+    return {'Coeficients':b,
+            'Errors':r,
+            }
+
 if __name__ == "__main__":
 
     factors = ['a', 'b']
@@ -156,14 +169,4 @@ if __name__ == "__main__":
                [+1, +1, [31, 30, 29]],
                ]
 
-    number_of_factors = len(factors)
-    contrasts, combinations = contrasts_factorial2k(number_of_factors=number_of_factors)
-    i = 0
-    for entry in contrasts:
-        print binary(i,number_of_factors), '\t', entry
-        i += 1
-
-    b, r = generate_model(example)
-    print "Coeficients: ", b
-    print "Residuals  : ", r
-
+    result = factorial2k(factors, example)
