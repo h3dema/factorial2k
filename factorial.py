@@ -164,15 +164,37 @@ def factorial2k(factors, matrix):
         sst += b[i]**2
     sst *= 2 ** number_of_factors
 
-    mult = (2 ** number_of_factors) * num_y
+    m = (2 ** number_of_factors) * num_y
     ss = []
     for q in b:
-        ss.append( mult * q**2 )
+        ss.append(m * q**2)
+
+    result['ss'] = ss
+    result['df_ss'] = [1 for i in range(len(ss))]
+
+    result['sst'] = sst
+    result['dft'] = m # !!!!!!!!!!!!!! ERROR
+
+    result['ssy'] = sst + ss[0]
+    result['dfy'] = sum(result['df_ss'])
 
     result['sse'] = sst - sum(ss)
-    result['ssy'] = sst + ss[0]
-    result['sst'] = sst
-    result['ss'] = ss
+    result['dfe'] = result['dft'] - result['dfy']
+
+    result['mse'] = result['sse'] / result['dfe']
+    result['msy'] = result['ssy']/ result['dfy']
+    result['mst'] = result['sst'] / result['dft']
+    result['mss'] = result['mss']
+    for i in range(len(result['mss'])):
+        result['mss'] /= result['df_ss'][i]
+
+    result['Fy']  = result['msy'] / result['mse']
+    result['Fss'] = result['mss'] / result['mse']
+    result['Fst'] = result['mst'] / result['mse']
+    result['Fss'] = result['mss'] / result['mse']
+
+    result['r2'] = result['ssy'] / sst
+    result['r2_adj'] = 1 + (result['sse'] * result['dft']) / (result['sst'] * result['dfe'])
 
     return result
 
