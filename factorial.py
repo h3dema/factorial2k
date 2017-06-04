@@ -184,19 +184,43 @@ def factorial2k(factors, matrix):
     result['mse'] = result['sse'] / result['dfe']
     result['msy'] = result['ssy']/ result['dfy']
     result['mst'] = result['sst'] / result['dft']
-    result['mss'] = result['mss']
+    result['mss'] = result['ss']
     for i in range(len(result['mss'])):
-        result['mss'] /= result['df_ss'][i]
+        result['mss'][i] /= result['df_ss'][i]
 
     result['Fy']  = result['msy'] / result['mse']
-    result['Fss'] = result['mss'] / result['mse']
-    result['Fst'] = result['mst'] / result['mse']
+    result['Ft']  = result['mst'] / result['mse']
     result['Fss'] = result['mss'] / result['mse']
 
     result['r2'] = result['ssy'] / sst
     result['r2_adj'] = 1 + (result['sse'] * result['dft']) / (result['sst'] * result['dfe'])
 
     return result
+
+def print_result_factorial(f):
+    print "Results:"
+    number_of_factors = len(factors)
+    print
+    print 'errors:'
+    for i in range(len(f['errors'])):
+        e = f['errors'][i]
+        print binary(i, number_of_factors), ': ', e
+
+    print
+    print 'coeficients'
+    for i in range(len(result['coeficients'])):
+        print binary(i, number_of_factors), ':', result['coeficients'][i]
+
+    print
+    print 'type', '\t\t', 'ss', '\t\t\t', 'df', '\t\t', 'mean', '\t\t\t', 'F'
+    print 'model', '\t', "%10.3f" % result['ssy'], '\t\t', result['dfy'], '\t', "%10.3f" % result['msy'], '\t', "%10.3f" % result['Fy']
+    for i in range(len(result['ss'])):
+        print i, '\t\t', "%10.3f" % result['ss'][i], '\t\t', result['df_ss'][i], '\t', "%10.3f" % result['mss'][i], '\t', "%10.3f" % result['Fss'][i]
+        #print 'ss%', result['ss'] / result['sst']
+
+    print 'total', '\t', "%10.3f" % result['sst'], '\t\t', result['dft'], '\t', "%10.3f" % result['mst'], '\t', "%10.3f" % result['Ft']
+
+
 
 if __name__ == "__main__":
 
@@ -209,12 +233,4 @@ if __name__ == "__main__":
                ]
 
     result = factorial2k(factors, example)
-    print 'errors:'
-    for e in result['errors']:
-        print e
-    print 'coeficients', result['coeficients']
-    print 'sst', result['sst']
-    print 'sst', result['sse']
-    print 'ss ', result['ss']
-    print 'ss%', result['ss'] / result['sst']
-    print 'ssy', result['ssy']
+    print_result_factorial(result)
