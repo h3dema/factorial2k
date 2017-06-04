@@ -173,12 +173,12 @@ def factorial2k(factors, matrix):
     result['df_ss'] = [1 for i in range(len(ss))]
 
     result['sst'] = sst
-    result['dft'] = m # !!!!!!!!!!!!!! ERROR
+    result['dft'] = m - 1
 
     result['ssy'] = sst + ss[0]
     result['dfy'] = sum(result['df_ss'])
 
-    result['sse'] = sst - sum(ss)
+    result['sse'] = sum(ss) - result['ssy']
     result['dfe'] = result['dft'] - result['dfy']
 
     result['mse'] = result['sse'] / result['dfe']
@@ -192,8 +192,16 @@ def factorial2k(factors, matrix):
     result['Ft']  = result['mst'] / result['mse']
     result['Fss'] = result['mss'] / result['mse']
 
+    from scipy.stats import f
+    result['py'] = f.sf(result['Fy'], result['dfy'], result['dfe'])
+    result['pt'] = f.sf(result['Ft'], result['dft'], result['dfe'])
+    result['pss'] = [0 for i in range(len(result['Fss']))]
+    for i in range(len(result['Fss'])):
+        result['pss'][i] = f.sf(result['Fss'][i], result['df_ss'][i], result['dfe'])
+
     result['r2'] = result['ssy'] / sst
     result['r2_adj'] = 1 + (result['sse'] * result['dft']) / (result['sst'] * result['dfe'])
+
 
     return result
 
@@ -212,13 +220,15 @@ def print_result_factorial(f):
         print binary(i, number_of_factors), ':', result['coeficients'][i]
 
     print
-    print 'type', '\t\t', 'ss', '\t\t\t', 'df', '\t\t', 'mean', '\t\t\t', 'F'
-    print 'model', '\t', "%10.3f" % result['ssy'], '\t\t', result['dfy'], '\t', "%10.3f" % result['msy'], '\t', "%10.3f" % result['Fy']
+    print "ANOVA"
+    print 'type', '\t\t', 'ss', '\t\t\t', 'df', '\t\t', 'mean', '\t\t\t', 'F', '\t\t\t', 'p'
+    print 'model', '\t', "%10.3f" % result['ssy'], '\t\t', result['dfy'], '\t', "%10.3f" % result['msy'], '\t', "%10.3f" % result['Fy'], '\t', "%10.3f" % result['py']
     for i in range(len(result['ss'])):
-        print i, '\t\t', "%10.3f" % result['ss'][i], '\t\t', result['df_ss'][i], '\t', "%10.3f" % result['mss'][i], '\t', "%10.3f" % result['Fss'][i]
+        print i, '\t\t', "%10.3f" % result['ss'][i], '\t\t', result['df_ss'][i], '\t', "%10.3f" % result['mss'][i], '\t', "%10.3f" % result['Fss'][i], '\t', "%10.3f" % result['pss'][i]
         #print 'ss%', result['ss'] / result['sst']
 
-    print 'total', '\t', "%10.3f" % result['sst'], '\t\t', result['dft'], '\t', "%10.3f" % result['mst'], '\t', "%10.3f" % result['Ft']
+    print 'error', '\t', "%10.3f" % result['sse'], '\t\t', result['dfe'], '\t', "%10.3f" % result['mse']
+    print 'total', '\t', "%10.3f" % result['sst'], '\t\t', result['dft'], '\t', "%10.3f" % result['mst'], '\t', "%10.3f" % result['Ft'], '\t', "%10.3f" % result['pt']
 
 
 
